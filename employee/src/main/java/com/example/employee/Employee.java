@@ -1,4 +1,4 @@
-package GoJava.employee.src.main.java.springboot.api.employee;
+package Tests.employee;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.annotation.Id;
 import org.bson.types.ObjectId;

@@ -42,13 +42,16 @@ func unique_employee_details(w http.ResponseWriter, r *http.Request){
 	var employees Employee
 	database_name := r.URL.Query().Get("db")
 	if database_name == "mongo"{
-		employees, _ = mongo_db_read_employee_details(int(employee_id))
+		employees, err = mongo_db_read_employee_details(int(employee_id))
 	}else if database_name=="mysql"{
-		employees, _ = mysql_db_get_employee(int(employee_id))
+		employees, err = mysql_db_get_employee(int(employee_id))
 	}else{
 		fmt.Fprintf(w,"Error, db name not found")
 	}
-
+	if employees.ID==0{
+		fmt.Fprintf(w, err.Error()+": User not found for this id :"+ employee_id_string)
+		return
+	}
 	json.NewEncoder(w).Encode(employees)
     fmt.Println("Endpoint Hit: unique_employee_details")
 }
@@ -63,15 +66,23 @@ func insert_employee_details(w http.ResponseWriter, r *http.Request){
 
 	database_name := r.URL.Query().Get("db")
 	if database_name == "mongo"{
-		status, _ := mongo_db_insert_new_employee(employee)
-		fmt.Println(status)
+		status, err := mongo_db_insert_new_employee(employee)
+		if err != nil{
+			fmt.Fprintf(w, status+ " : " +err.Error())
+			return
+		}
+		fmt.Fprintf(w, status)
 	}else if database_name=="mysql"{
 		id, err := mysql_db_insert(employee.Name, employee.Age, employee.Address)
 		if err != nil{
-			fmt.Fprintf(w,err.Error())
+			fmt.Fprintf(w, err.Error())
 			return
 		}
-		fmt.Println(id)
+		if id == 0{
+			fmt.Fprintf(w, "Unsuccessful insert")
+			return 
+		}
+		fmt.Fprintf(w, "Successfully inserted with id :"+ strconv.Itoa(id))
 	}else{
 		fmt.Fprintf(w,"Error, db name not found")
 	}
@@ -91,20 +102,20 @@ func delete_employee_details(w http.ResponseWriter, r *http.Request){
 	if database_name == "mongo"{
 		status, err := mongo_db_delete_employee_details(int(employee_id))
 		if err!=nil{
-			fmt.Println(err)
+			fmt.Fprintf(w, status +" : "+ err.Error())
 			return
 		}
-		fmt.Println(status)
+		fmt.Fprintf(w, status )
 	}else if database_name=="mysql"{
 		count, err := mysql_db_delete_employee(int64(employee_id))
 		if err !=nil{
-			fmt.Println(err)
+			fmt.Fprintf(w, err.Error())
 		}
 		if count==0{
-			fmt.Println("Delete not performed as there were no matching rows for this id")
+			fmt.Fprintf(w,"Delete not performed as there were no matching rows for this id")
 			return
 		}
-		fmt.Println("Delete successful")
+		fmt.Fprintf(w,"Delete successful")
 	}else{
 		fmt.Fprintf(w,"Error, db name not found")
 	}
@@ -129,20 +140,20 @@ func db_update_employee_details(w http.ResponseWriter, r *http.Request){
 	if database_name == "mongo"{
 		status, err := mongo_db_update_employee_details(int(employee_id), employee.Name, employee.Age, employee.Address)
 		if err!=nil{
-			fmt.Println(err)
+			fmt.Fprintf(w, status +" : "+ err.Error())
 			return
 		}
-		fmt.Println(status)
+		fmt.Fprintf(w, status)
 	}else if database_name=="mysql"{
 		count, err := mysql_db_update_employee_details(int64(employee_id), employee.Name, employee.Age, employee.Address)
 		if err !=nil{
-			fmt.Println(err)
+			fmt.Fprintf(w, err.Error())
 		}
 		if count==0{
-			fmt.Println("Update not performed as there were no matching rows for this id")
+			fmt.Fprintf(w, " : Update not performed as there were no matching rows for this id or the data is up-to-date")
 			return
 		}
-		fmt.Println("Update successful")
+		fmt.Fprintf(w, "Update successful")
 	}else{
 		fmt.Fprintf(w,"Error, db name not found")
 	}

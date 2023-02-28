@@ -1,4 +1,4 @@
-package GoJava.employee.src.main.java.springboot.api.employee;
+package Tests.employee;
 import java.util.ArrayList;
 
 import java.sql.*;
@@ -28,7 +28,6 @@ public class MySQLfunc {
                 age = resultSet.getInt("age");
                 address = resultSet.getString("address").trim();
                 emp= new Employee(id, name, age, address);
-                // System.out.println("Id : " + id+ " Name : " + name+ " Age : " + age+ " Address : " + address);
                 employees.add(emp);
             }
             resultSet.close();
@@ -65,7 +64,6 @@ public class MySQLfunc {
                 emp.setAge(age);
                 address = resultSet.getString("address").trim();
                 emp.setAddress(address);
-                // System.out.println("Id : " + id+ " Name : " + name+ " Age : " + age+ " Address : " + address);
             }
             resultSet.close();
             statement.close();
@@ -78,24 +76,29 @@ public class MySQLfunc {
         return emp;
     }
 
-    public void db_insert_employee_details(String name, int age, String address){
+    public int db_insert_employee_details(String name, int age, String address){
+        int rowsaffected = 0;
         try{
             Connection connection = null;
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/employeedb","root", "Vishnu@2001");
             Statement statement;
             statement = connection.createStatement();
-            statement.executeUpdate("INSERT into employee_details(name, age, address) VALUES('" + name+"',"+String.valueOf(age)+",'"+address+"');");
+            
+            rowsaffected = statement.executeUpdate("INSERT into employee_details(name, age, address) VALUES('" + name+"',"+String.valueOf(age)+",'"+address+"');");
 
             statement.close();
             connection.close();
+            return rowsaffected;
         }
         catch (Exception exception) {
 			System.out.println(exception);
+            return rowsaffected;
 		}
     }
 
-    public void db_update_employee_details(int id, String name, int age, String address){
+    public int db_update_employee_details(int id, String name, int age, String address){
+        int rowsaffected = 0;
         try{
             Connection connection = null;
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -107,18 +110,21 @@ public class MySQLfunc {
             statement.setInt(2, age);
             statement.setString(3, address);
             statement.setInt(4, id);
-            statement.execute();
+            rowsaffected = statement.executeUpdate();
           
 
             statement.close();
             connection.close();
+            return rowsaffected;
         }
         catch (Exception exception) {
 			System.out.println(exception);
+            return rowsaffected;
 		}
     }
 
-    public void db_delete_employee_details(int id){
+    public int db_delete_employee_details(int id){
+        int rowsaffected = 0;
         try{
             Connection connection = null;
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -127,30 +133,33 @@ public class MySQLfunc {
             String query="DELETE from employee_details where id = ?;";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setInt(1, id);
-            // statement.executeUpdate("UPDATE employee_details set name = ?, age = ?, address=? where id = ?;");
-            statement.execute();
+
+            rowsaffected = statement.executeUpdate();
             // statement.close();
             connection.close();
+            return rowsaffected;
+
         }
         catch (Exception exception) {
 			System.out.println(exception);
+            return rowsaffected;
 		}
     }
 
-	public static void main(String arg[])
-	{
-		try {
-            // db_get_all_employee_details();
-            // db_update_employee_details(50, "Raghavendra", 28, "Somewhere in America");
-            // Employee emp = db_get_employee_details(50);
-            // System.out.println(emp);
-            // db_insert_employee_details("Mr Bean", 45, "Somewhere in Europe");
-            // db_delete_employee_details(56);
+	// public static void main(String arg[])
+	// {
+	// 	try {
+    //         // db_get_all_employee_details();
+    //         // db_update_employee_details(50, "Raghavendra", 28, "Somewhere in America");
+    //         // Employee emp = db_get_employee_details(50);
+    //         // System.out.println(emp);
+    //         // db_insert_employee_details("Mr Bean", 45, "Somewhere in Europe");
+    //         // db_delete_employee_details(56);
 
 			
-		}
-		catch (Exception exception) {
-			System.out.println(exception);
-		}
-	} 
+	// 	}
+	// 	catch (Exception exception) {
+	// 		System.out.println(exception);
+	// 	}
+	// } 
 }

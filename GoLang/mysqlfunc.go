@@ -62,11 +62,11 @@ func mysql_db_insert(ename string, eage int, eaddr string ) (int, error){
     // if there is an error opening the connection, handle it
     if err != nil {
         panic(err.Error())
-		return 0, err
+		// return 0, err
     }
 
 	defer db.Close()
-	// insert, err := db.Query("INSERT INTO employee_details(name, age, address) VALUES('Vishnu J G', 21, '42, 2nd main, Poorna Pragna Layout BSK 3rd stage, Bengaluru 560085')")
+
 	insert_query:="INSERT INTO employee_details(name, age, address) VALUES(?, ?, ?)"
 	insert, err := db.ExecContext(context.Background(), insert_query, ename, eage, eaddr)
     if err != nil {
@@ -78,7 +78,7 @@ func mysql_db_insert(ename string, eage int, eaddr string ) (int, error){
 		fmt.Printf("Unable to retrieve id: %q\n", err)
 		return 0, err
 	}
-	// fmt.Printf("Inserted id: %T\n", id)
+
 	return int(id), nil
 }
 

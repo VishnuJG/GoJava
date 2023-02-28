@@ -1,4 +1,4 @@
-package GoJava.employee.src.test.java.springboot.api.employee;
+package com.example.employee;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

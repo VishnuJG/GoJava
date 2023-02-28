@@ -7,6 +7,7 @@ import (
 	// "go.mongodb.org/mongo-driver/bson/primitive" 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"errors"
 )
 
 // type Employee struct {
@@ -38,26 +39,30 @@ func mongo_db_Connection()(*mongo.Collection, error){
 	return collection, nil
 }
 
-func mongo_db_get_number_of_employees() (int, error){
-	collection, err := mongo_db_Connection()
-	if err != nil{
-		fmt.Println(err)
-	}
-	count, err := collection.CountDocuments(context.TODO(),bson.D{})
-	if err != nil {
-		panic(err)
-		return -1, err
-	}
-	// fmt.Printf("Number of documents : %d\n", count)
-	return int(count), nil
-}
+// func mongo_db_get_number_of_employees() (int, error){
+// 	collection, err := mongo_db_Connection()
+// 	if err != nil{
+// 		fmt.Println(err)
+// 	}
+// 	count, err := collection.CountDocuments(context.TODO(),bson.D{})
+// 	if err != nil {
+// 		panic(err)
+// 		return -1, err
+// 	}
+// 	// fmt.Printf("Number of documents : %d\n", count)
+// 	return int(count), nil
+// }
 
 func mongo_db_insert_new_employee(employee Employee)(string, error){
-	count, err := mongo_db_get_number_of_employees()
-	if err!=nil{
-		return "Unsuccessful insert", err
-	}
-	employee.ID=count+1
+	allemp:= mongo_db_read_all_employee_details()
+	
+	maxId := 0
+    for _, emp := range allemp {
+        if emp.ID > maxId {
+            maxId = emp.ID
+        }
+    }
+	employee.ID=maxId+1
 	collection, err := mongo_db_Connection()
 	if err != nil{
 		fmt.Println(err)
@@ -111,6 +116,9 @@ func mongo_db_update_employee_details(id int, name string, age int, address stri
 		fmt.Println(err)
 		return "Unsuccessful update", err
 	}
+	if res.ModifiedCount==0{
+		return "Unsuccessful update: document not found or is up to date", errors.New("document not Updated")
+	}
 	fmt.Printf("Updated %v Documents!\n", res.ModifiedCount)
 	return "Successfully updated", nil
 }
@@ -124,6 +132,9 @@ func mongo_db_delete_employee_details(id int)(string, error){
 	if err != nil {
 		fmt.Println(err)
 		return "Unsuccessful delete", err
+	}
+	if res.DeletedCount==0{
+		return "Unsuccessful delete: document not found", errors.New("document not found")
 	}
 	fmt.Println(res)
 	return "Successful delete", nil
