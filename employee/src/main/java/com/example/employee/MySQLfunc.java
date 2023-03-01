@@ -1,4 +1,4 @@
-package Tests.employee;
+package com.example.employee;
 import java.util.ArrayList;
 
 import java.sql.*;
