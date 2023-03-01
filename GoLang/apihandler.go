@@ -92,7 +92,7 @@ func insert_employee_details(w http.ResponseWriter, r *http.Request){
 
 func delete_employee_details(w http.ResponseWriter, r *http.Request){
 	employee_id_string:=mux.Vars(r)["id"]
-	employee_id, err := strconv.Atoi(employee_id_string);
+	employee_id, err := strconv.Atoi(employee_id_string)
 	if  err != nil {
 		fmt.Fprintf(w, "Invalid employee ID")
 	}
