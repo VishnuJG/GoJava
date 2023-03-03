@@ -1,11 +1,12 @@
-package main
+package services
 
 import (
 	"context"
-	"database/sql"
+
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	// "Employee"
+	"employee.info/m/entity"
+	"employee.info/m/connections"
 )
 
 const (  
@@ -22,21 +23,21 @@ const (
 // 	Address string `json:"name"`
 // }
 
-func dsn() string {  
-    return fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, hostname, dbname)
-}
+// func dsn() string {  
+//     return fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, hostname, dbname)
+// }
 
-func mysql_db_Connection() (*sql.DB, error) {  
-    db, err := sql.Open("mysql", dsn())
-    if err != nil {
-        fmt.Printf("Error %s when opening DB\n", err)
-        return nil, err
-    }
-    return db, nil
-}
+// func Mysql_db_Connection() (*sql.DB, error) {  
+//     db, err := sql.Open("mysql", dsn())
+//     if err != nil {
+//         fmt.Printf("Error %s when opening DB\n", err)
+//         return nil, err
+//     }
+//     return db, nil
+// }
 
-func mysql_db_health_check()error{
-	db, err := mysql_db_Connection()
+func Mysql_db_health_check()error{
+	db, err := connections.Mysql_db_Connection()
 	if err != nil {
         // panic(err.Error())
 		return err
@@ -57,8 +58,8 @@ func mysql_db_health_check()error{
 	return nil
 }
 
-func mysql_db_insert(ename string, eage int, eaddr string ) (int, error){
-	db, err := mysql_db_Connection()
+func Mysql_db_insert(ename string, eage int, eaddr string ) (int, error){
+	db, err := connections.Mysql_db_Connection()
     // if there is an error opening the connection, handle it
     if err != nil {
         panic(err.Error())
@@ -82,10 +83,10 @@ func mysql_db_insert(ename string, eage int, eaddr string ) (int, error){
 	return int(id), nil
 }
 
-func mysql_db_get_employee(id int)(Employee, error){
+func Mysql_db_get_employee(id int)(entity.Employee, error){
 	get_query:="SELECT * FROM employee_details where id = ?;"
-	db, err := mysql_db_Connection()
-	var employee Employee
+	db, err := connections.Mysql_db_Connection()
+	var employee entity.Employee
 	if err != nil {
         // panic(err.Error())
 		return employee, err
@@ -101,10 +102,10 @@ func mysql_db_get_employee(id int)(Employee, error){
     return employee, nil
 }
 
-func mysql_db_get_all_employee()([]Employee, error){
+func Mysql_db_get_all_employee()([]entity.Employee, error){
 	get_query:="SELECT * FROM employee_details;"
-	db, err := mysql_db_Connection()
-	var employees []Employee
+	db, err := connections.Mysql_db_Connection()
+	var employees []entity.Employee
 	if err != nil {
         // panic(err.Error())
 		return employees, err
@@ -117,7 +118,7 @@ func mysql_db_get_all_employee()([]Employee, error){
 		return employees, err
     }else{
 		for cur.Next(){
-			var employee Employee
+			var employee entity.Employee
 			err := cur.Scan(&employee.ID, &employee.Name, &employee.Age, &employee.Address)
 			if err != nil {
 				fmt.Println(err)
@@ -129,11 +130,11 @@ func mysql_db_get_all_employee()([]Employee, error){
 	}
 	
 	// fmt.Println(employee.ID, employee.Name, employee.Age, employee.Address)
-    return employees, nil
+    // return employees, nil
 }
 
-func mysql_db_update_employee_details(id int64, ename string, eage int, eaddr string ) (int, error){
-	db, err := mysql_db_Connection()
+func Mysql_db_update_employee_details(id int64, ename string, eage int, eaddr string ) (int, error){
+	db, err := connections.Mysql_db_Connection()
     // if there is an error opening the connection, handle it
     if err != nil {
         panic(err.Error())
@@ -156,8 +157,8 @@ func mysql_db_update_employee_details(id int64, ename string, eage int, eaddr st
 	return int(id), nil
 }
 
-func mysql_db_delete_employee(id int64) (int, error){
-	db, err := mysql_db_Connection()
+func Mysql_db_delete_employee(id int64) (int, error){
+	db, err := connections.Mysql_db_Connection()
     // if there is an error opening the connection, handle it
     if err != nil {
         panic(err.Error())

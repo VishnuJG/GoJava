@@ -23,10 +23,10 @@ static_resources:
                             prefix: "/"
                           route:
                             cluster: java_cluster
-                        - match:
-                            prefix: "/"
-                          route:
-                            cluster: go_cluster
+                        # - match:
+                        #     prefix: "/"
+                        #   route:
+                        #     cluster: go_cluster
                 http_filters:
                 - name: envoy.filters.http.router
                   typed_config:

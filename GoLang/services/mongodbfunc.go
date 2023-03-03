@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"context"
@@ -6,8 +6,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	// "go.mongodb.org/mongo-driver/bson/primitive" 
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+
 	"errors"
+	"employee.info/m/entity"
+	"employee.info/m/connections"
 )
 
 // type Employee struct {
@@ -20,27 +22,27 @@ import (
 var collection *mongo.Collection
 var ctx = context.TODO()
 
-func mongo_db_Connection()(*mongo.Collection, error){
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017/")
-	client, err := mongo.Connect(ctx, clientOptions)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
+// func Mongo_db_Connection()(*mongo.Collection, error){
+// 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017/")
+// 	client, err := mongo.Connect(ctx, clientOptions)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return nil, err
+// 	}
 
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
+// 	err = client.Ping(ctx, nil)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return nil, err
+// 	}
 
-	collection = client.Database("employeedb").Collection("employee_details")
-	// fmt.Println("Done")
-	return collection, nil
-}
+// 	collection = client.Database("employeedb").Collection("employee_details")
+// 	// fmt.Println("Done")
+// 	return collection, nil
+// }
 
 // func mongo_db_get_number_of_employees() (int, error){
-// 	collection, err := mongo_db_Connection()
+// 	collection, err := Mongo_db_Connection()
 // 	if err != nil{
 // 		fmt.Println(err)
 // 	}
@@ -53,8 +55,8 @@ func mongo_db_Connection()(*mongo.Collection, error){
 // 	return int(count), nil
 // }
 
-func mongo_db_insert_new_employee(employee Employee)(string, error){
-	allemp:= mongo_db_read_all_employee_details()
+func Mongo_db_insert_new_employee(employee entity.Employee)(string, error){
+	allemp:= Mongo_db_read_all_employee_details()
 	
 	maxId := 0
     for _, emp := range allemp {
@@ -63,7 +65,7 @@ func mongo_db_insert_new_employee(employee Employee)(string, error){
         }
     }
 	employee.ID=maxId+1
-	collection, err := mongo_db_Connection()
+	collection, err := connections.Mongo_db_Connection()
 	if err != nil{
 		fmt.Println(err)
 	}
@@ -76,13 +78,13 @@ func mongo_db_insert_new_employee(employee Employee)(string, error){
 	return "Successful insert", nil
 }
 
-func mongo_db_read_employee_details(id int)(Employee, error){
-	collection, err := mongo_db_Connection()
+func Mongo_db_read_employee_details(id int)(entity.Employee, error){
+	collection, err := connections.Mongo_db_Connection()
 	if err != nil{
 		fmt.Println(err)
 	}
 	filter := bson.D{{"id", id}}
-	var emp Employee
+	var emp entity.Employee
 	err = collection.FindOne(context.TODO(), filter).Decode(&emp)
 	if err != nil{
 		fmt.Println(err)
@@ -92,13 +94,13 @@ func mongo_db_read_employee_details(id int)(Employee, error){
 	}
 }
 
-func mongo_db_read_all_employee_details()([]Employee){
-	collection, err := mongo_db_Connection()
+func Mongo_db_read_all_employee_details()([]entity.Employee){
+	collection, err := connections.Mongo_db_Connection()
 	if err != nil{
 		fmt.Println(err)
 	}
 	filter := bson.D{}
-	var emp []Employee
+	var emp []entity.Employee
 	cur, err := collection.Find(context.TODO(), filter)
 	if err = cur.All(context.TODO(), &emp); err != nil {
         fmt.Println(err)
@@ -106,8 +108,8 @@ func mongo_db_read_all_employee_details()([]Employee){
 	return emp
 }
 
-func mongo_db_update_employee_details(id int, name string, age int, address string)(string, error){
-	collection, err := mongo_db_Connection()
+func Mongo_db_update_employee_details(id int, name string, age int, address string)(string, error){
+	collection, err := connections.Mongo_db_Connection()
 	if err != nil{
 		fmt.Println(err)
 	}
@@ -123,8 +125,8 @@ func mongo_db_update_employee_details(id int, name string, age int, address stri
 	return "Successfully updated", nil
 }
 
-func mongo_db_delete_employee_details(id int)(string, error){
-	collection, err := mongo_db_Connection()
+func Mongo_db_delete_employee_details(id int)(string, error){
+	collection, err := connections.Mongo_db_Connection()
 	if err != nil{
 		fmt.Println(err)
 	}
