@@ -7,7 +7,8 @@ import(
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"employee.info/m/entity"
-	"employee.info/m/services"
+	// "employee.info/m/services"
+	i "employee.info/m/interfaces"
 	
 )
 // type Employee struct {
@@ -17,19 +18,26 @@ import(
 // 	Address string `json:"address"`
 // }
 
+
+
 func All_employees(w http.ResponseWriter, r *http.Request){
 	var employees []entity.Employee
 	database_name := r.URL.Query().Get("db")
+	
 	if database_name == "mongo"{
-		employees = services.Mongo_db_read_all_employee_details()
+		employeeService := &i.MongoEmployeeServiceImpl{}
+		employees, _ = employeeService.DbReadAllEmployeeDetails()
 	}else if database_name=="mysql"{
-		employees, _ = services.Mysql_db_get_all_employee()
+		employeeService := &i.MysqlEmployeeServiceImpl{}
+		employees, _ = employeeService.DbReadAllEmployeeDetails()
 	}else{
-		employees, _ = services.Mysql_db_get_all_employee()
-		employees = append(employees, services.Mongo_db_read_all_employee_details()...)
+		mongoEmployeeService := &i.MongoEmployeeServiceImpl{}
+		mysqlEmployeeService := &i.MongoEmployeeServiceImpl{}
+		mysqlemployees, _ := mysqlEmployeeService.DbReadAllEmployeeDetails()
+		mongoemp, _:=mongoEmployeeService.DbReadAllEmployeeDetails()
+		employees = append(mysqlemployees, mongoemp...)
 	}
 
-	// fmt.Println(database_name)
 	json.NewEncoder(w).Encode(employees)
     fmt.Println("Endpoint Hit: all_employees")
 }
@@ -37,15 +45,19 @@ func All_employees(w http.ResponseWriter, r *http.Request){
 func Unique_employee_details(w http.ResponseWriter, r *http.Request){
 	employee_id_string:=mux.Vars(r)["id"]
 	employee_id, err := strconv.Atoi(employee_id_string);
+	
 	if  err != nil {
 		fmt.Fprintf(w, "Invalid employee ID")
 	}
 	var employees entity.Employee
 	database_name := r.URL.Query().Get("db")
 	if database_name == "mongo"{
-		employees, err = services.Mongo_db_read_employee_details(int(employee_id))
+		employeeService := &i.MongoEmployeeServiceImpl{}
+		// employees, err = services.Mongo_db_read_employee_details(int(employee_id))
+		employees, err = employeeService.DbReadEmployeeDetails(int(employee_id))
 	}else if database_name=="mysql"{
-		employees, err = services.Mysql_db_get_employee(int(employee_id))
+		employeeService := &i.MysqlEmployeeServiceImpl{}
+		employees, err = employeeService.DbReadEmployeeDetails(int(employee_id))
 	}else{
 		fmt.Fprintf(w,"Error, db name not found")
 	}
@@ -60,6 +72,7 @@ func Unique_employee_details(w http.ResponseWriter, r *http.Request){
 func Insert_employee_details(w http.ResponseWriter, r *http.Request){
 	var employee entity.Employee
 	err := json.NewDecoder(r.Body).Decode(&employee)
+	
     if err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
@@ -67,23 +80,26 @@ func Insert_employee_details(w http.ResponseWriter, r *http.Request){
 
 	database_name := r.URL.Query().Get("db")
 	if database_name == "mongo"{
-		status, err := services.Mongo_db_insert_new_employee(employee)
+		employeeService := &i.MongoEmployeeServiceImpl{}
+		// status, err := services.Mongo_db_insert_new_employee(employee)
+		status, err := employeeService.DbInsertNewEmployee(employee)
 		if err != nil{
 			fmt.Fprintf(w, status+ " : " +err.Error())
 			return
 		}
 		fmt.Fprintf(w, status)
 	}else if database_name=="mysql"{
-		id, err := services.Mysql_db_insert(employee.Name, employee.Age, employee.Address)
+		employeeService := &i.MysqlEmployeeServiceImpl{}
+		status, err := employeeService.DbInsertNewEmployee(employee)
 		if err != nil{
-			fmt.Fprintf(w, err.Error())
+			fmt.Fprintf(w, status +" : " + err.Error())
 			return
 		}
-		if id == 0{
-			fmt.Fprintf(w, "Unsuccessful insert")
-			return 
-		}
-		fmt.Fprintf(w, "Successfully inserted with id :"+ strconv.Itoa(id))
+		// if id == 0{
+		// 	fmt.Fprintf(w, "Unsuccessful insert")
+		// 	return 
+		// }
+		fmt.Fprintf(w, status)
 	}else{
 		fmt.Fprintf(w,"Error, db name not found")
 	}
@@ -94,6 +110,7 @@ func Insert_employee_details(w http.ResponseWriter, r *http.Request){
 func Delete_employee_details(w http.ResponseWriter, r *http.Request){
 	employee_id_string:=mux.Vars(r)["id"]
 	employee_id, err := strconv.Atoi(employee_id_string)
+	
 	if  err != nil {
 		fmt.Fprintf(w, "Invalid employee ID")
 	}
@@ -101,22 +118,23 @@ func Delete_employee_details(w http.ResponseWriter, r *http.Request){
 
 	database_name := r.URL.Query().Get("db")
 	if database_name == "mongo"{
-		status, err := services.Mongo_db_delete_employee_details(int(employee_id))
+		employeeService := &i.MongoEmployeeServiceImpl{}
+		// status, err := services.Mongo_db_delete_employee_details(int(employee_id))
+		status, err := employeeService.DbDeleteEmployeeDetails(int(employee_id))
 		if err!=nil{
 			fmt.Fprintf(w, status +" : "+ err.Error())
 			return
 		}
 		fmt.Fprintf(w, status )
 	}else if database_name=="mysql"{
-		count, err := services.Mysql_db_delete_employee(int64(employee_id))
+		employeeService := &i.MysqlEmployeeServiceImpl{}
+		status, err := employeeService.DbDeleteEmployeeDetails(int(employee_id))
 		if err !=nil{
-			fmt.Fprintf(w, err.Error())
-		}
-		if count==0{
-			fmt.Fprintf(w,"Delete not performed as there were no matching rows for this id")
+			fmt.Fprintf(w, status +" : "+err.Error())
 			return
 		}
-		fmt.Fprintf(w,"Delete successful")
+		
+		fmt.Fprintf(w, status)
 	}else{
 		fmt.Fprintf(w,"Error, db name not found")
 	}
@@ -126,6 +144,7 @@ func Delete_employee_details(w http.ResponseWriter, r *http.Request){
 func Db_update_employee_details(w http.ResponseWriter, r *http.Request){
 	var employee entity.Employee
 	err := json.NewDecoder(r.Body).Decode(&employee)
+	
 	if err != nil {
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
@@ -134,44 +153,32 @@ func Db_update_employee_details(w http.ResponseWriter, r *http.Request){
 	employee_id, err := strconv.Atoi(employee_id_string);
 	if  err != nil {
 		fmt.Fprintf(w, "Invalid employee ID")
+		return
 	}
 
 
 	database_name := r.URL.Query().Get("db")
 	if database_name == "mongo"{
-		status, err := services.Mongo_db_update_employee_details(int(employee_id), employee.Name, employee.Age, employee.Address)
+		employeeService := &i.MongoEmployeeServiceImpl{}
+		// status, err := services.Mongo_db_update_employee_details(int(employee_id), employee.Name, employee.Age, employee.Address)
+		status, err := employeeService.DbUpdateEmployeeDetails(int(employee_id), employee.Name, employee.Age, employee.Address)
 		if err!=nil{
 			fmt.Fprintf(w, status +" : "+ err.Error())
 			return
 		}
 		fmt.Fprintf(w, status)
 	}else if database_name=="mysql"{
-		count, err := services.Mysql_db_update_employee_details(int64(employee_id), employee.Name, employee.Age, employee.Address)
+		employeeService := &i.MysqlEmployeeServiceImpl{}
+		status, err := employeeService.DbUpdateEmployeeDetails(int(employee_id), employee.Name, employee.Age, employee.Address)
 		if err !=nil{
-			fmt.Fprintf(w, err.Error())
-		}
-		if count==0{
-			fmt.Fprintf(w, " : Update not performed as there were no matching rows for this id or the data is up-to-date")
+			fmt.Fprintf(w, status +" : " + err.Error())
 			return
 		}
-		fmt.Fprintf(w, "Update successful")
+		
+		fmt.Fprintf(w, status)
 	}else{
 		fmt.Fprintf(w,"Error, db name not found")
 	}
 	fmt.Println("Endpoint Hit: db_update_employee_details")
 }
 
-// func handleRequests() {
-//     myRouter := mux.NewRouter()
-//     myRouter.HandleFunc("/", all_employees).Methods("GET")
-// 	myRouter.HandleFunc("/employee/{id}", unique_employee_details).Methods("GET")
-// 	myRouter.HandleFunc("/employee", insert_employee_details).Methods("POST") // insert
-// 	myRouter.HandleFunc("/employee/{id}", delete_employee_details).Methods("DELETE")
-// 	myRouter.HandleFunc("/employee/{id}", db_update_employee_details).Methods("PUT") // update
-//     log.Fatal(http.ListenAndServe(":10000", myRouter))
-// }
-
-// func main() {
-// 	handleRequests()
-
-// }
