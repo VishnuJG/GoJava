@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 
 
 import com.example.employee.entity.EmployeeMySQL;
-// import com.example.employee.entity.EmployeeMongo;
 import com.example.employee.repository.EmployeeRepository;
 import com.example.employee.services.MongoFunc;
 import com.example.employee.services.MySQLfunc;
