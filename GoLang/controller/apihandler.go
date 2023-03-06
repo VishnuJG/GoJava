@@ -7,7 +7,6 @@ import(
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"employee.info/m/entity"
-	// "employee.info/m/services"
 	i "employee.info/m/interfaces"
 	
 )
@@ -19,11 +18,12 @@ import(
 // }
 
 
-
+// Function to get details of all the employees in the any one or both the databases
 func All_employees(w http.ResponseWriter, r *http.Request){
 	var employees []entity.Employee
 	database_name := r.URL.Query().Get("db")
 	
+	// check the database to use
 	if database_name == "mongo"{
 		employeeService := &i.MongoEmployeeServiceImpl{}
 		employees, _ = employeeService.DbReadAllEmployeeDetails()
@@ -32,7 +32,7 @@ func All_employees(w http.ResponseWriter, r *http.Request){
 		employees, _ = employeeService.DbReadAllEmployeeDetails()
 	}else{
 		mongoEmployeeService := &i.MongoEmployeeServiceImpl{}
-		mysqlEmployeeService := &i.MongoEmployeeServiceImpl{}
+		mysqlEmployeeService := &i.MysqlEmployeeServiceImpl{}
 		mysqlemployees, _ := mysqlEmployeeService.DbReadAllEmployeeDetails()
 		mongoemp, _:=mongoEmployeeService.DbReadAllEmployeeDetails()
 		employees = append(mysqlemployees, mongoemp...)
@@ -42,6 +42,8 @@ func All_employees(w http.ResponseWriter, r *http.Request){
     fmt.Println("Endpoint Hit: all_employees")
 }
 
+
+// Function to get details of a particular employee based on the id provided
 func Unique_employee_details(w http.ResponseWriter, r *http.Request){
 	employee_id_string:=mux.Vars(r)["id"]
 	employee_id, err := strconv.Atoi(employee_id_string);
@@ -51,9 +53,11 @@ func Unique_employee_details(w http.ResponseWriter, r *http.Request){
 	}
 	var employees entity.Employee
 	database_name := r.URL.Query().Get("db")
+
+	// check the database to use
 	if database_name == "mongo"{
 		employeeService := &i.MongoEmployeeServiceImpl{}
-		// employees, err = services.Mongo_db_read_employee_details(int(employee_id))
+
 		employees, err = employeeService.DbReadEmployeeDetails(int(employee_id))
 	}else if database_name=="mysql"{
 		employeeService := &i.MysqlEmployeeServiceImpl{}
@@ -69,6 +73,8 @@ func Unique_employee_details(w http.ResponseWriter, r *http.Request){
     fmt.Println("Endpoint Hit: unique_employee_details")
 }
 
+
+// Function to insert a new employee record into the employee table
 func Insert_employee_details(w http.ResponseWriter, r *http.Request){
 	var employee entity.Employee
 	err := json.NewDecoder(r.Body).Decode(&employee)
@@ -79,9 +85,11 @@ func Insert_employee_details(w http.ResponseWriter, r *http.Request){
     }
 
 	database_name := r.URL.Query().Get("db")
+
+	// check the database to use
 	if database_name == "mongo"{
 		employeeService := &i.MongoEmployeeServiceImpl{}
-		// status, err := services.Mongo_db_insert_new_employee(employee)
+
 		status, err := employeeService.DbInsertNewEmployee(employee)
 		if err != nil{
 			fmt.Fprintf(w, status+ " : " +err.Error())
@@ -95,10 +103,7 @@ func Insert_employee_details(w http.ResponseWriter, r *http.Request){
 			fmt.Fprintf(w, status +" : " + err.Error())
 			return
 		}
-		// if id == 0{
-		// 	fmt.Fprintf(w, "Unsuccessful insert")
-		// 	return 
-		// }
+		
 		fmt.Fprintf(w, status)
 	}else{
 		fmt.Fprintf(w,"Error, db name not found")
@@ -107,6 +112,7 @@ func Insert_employee_details(w http.ResponseWriter, r *http.Request){
 }
 
 
+// Function to delete an employee's details
 func Delete_employee_details(w http.ResponseWriter, r *http.Request){
 	employee_id_string:=mux.Vars(r)["id"]
 	employee_id, err := strconv.Atoi(employee_id_string)
@@ -117,9 +123,11 @@ func Delete_employee_details(w http.ResponseWriter, r *http.Request){
 
 
 	database_name := r.URL.Query().Get("db")
+
+	// check the database to use
 	if database_name == "mongo"{
 		employeeService := &i.MongoEmployeeServiceImpl{}
-		// status, err := services.Mongo_db_delete_employee_details(int(employee_id))
+
 		status, err := employeeService.DbDeleteEmployeeDetails(int(employee_id))
 		if err!=nil{
 			fmt.Fprintf(w, status +" : "+ err.Error())
@@ -141,6 +149,7 @@ func Delete_employee_details(w http.ResponseWriter, r *http.Request){
 	fmt.Println("Endpoint Hit: delete_employee_details")
 }
 
+// Function to update the details of an employee
 func Db_update_employee_details(w http.ResponseWriter, r *http.Request){
 	var employee entity.Employee
 	err := json.NewDecoder(r.Body).Decode(&employee)
@@ -156,11 +165,12 @@ func Db_update_employee_details(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-
 	database_name := r.URL.Query().Get("db")
+
+	// check the database to use
 	if database_name == "mongo"{
 		employeeService := &i.MongoEmployeeServiceImpl{}
-		// status, err := services.Mongo_db_update_employee_details(int(employee_id), employee.Name, employee.Age, employee.Address)
+
 		status, err := employeeService.DbUpdateEmployeeDetails(int(employee_id), employee.Name, employee.Age, employee.Address)
 		if err!=nil{
 			fmt.Fprintf(w, status +" : "+ err.Error())

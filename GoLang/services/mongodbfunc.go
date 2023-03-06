@@ -20,6 +20,8 @@ import (
 // var collection *mongo.Collection
 var ctx = context.TODO()
 
+
+// Function to insert a new employee record into the employee table
 func Mongo_db_insert_new_employee(employee entity.Employee)(string, error){
 	allemp, _:= Mongo_db_read_all_employee_details()
 	
@@ -39,10 +41,10 @@ func Mongo_db_insert_new_employee(employee entity.Employee)(string, error){
 		fmt.Println(err)
 		return "Unsuccessful insert", err
 	}
-	// fmt.Println(result.InsertedID)
 	return "Successful insert new employee with id : "+strconv.Itoa(maxId+1), nil
 }
 
+// Function to get details of a particular employee based on the id provided
 func Mongo_db_read_employee_details(id int)(entity.Employee, error){
 	collection, err := connections.Mongo_db_Connection()
 	if err != nil{
@@ -59,6 +61,8 @@ func Mongo_db_read_employee_details(id int)(entity.Employee, error){
 	}
 }
 
+
+// Function to get details of all the employees in the database
 func Mongo_db_read_all_employee_details()([]entity.Employee, error){
 	var emp []entity.Employee
 	collection, err := connections.Mongo_db_Connection()
@@ -75,6 +79,8 @@ func Mongo_db_read_all_employee_details()([]entity.Employee, error){
 	return emp, nil
 }
 
+
+// Function to update the details of an employee
 func Mongo_db_update_employee_details(id int, name string, age int, address string)(string, error){
 	collection, err := connections.Mongo_db_Connection()
 	if err != nil{
@@ -92,6 +98,8 @@ func Mongo_db_update_employee_details(id int, name string, age int, address stri
 	return "Successfully updated", nil
 }
 
+
+// Function to delete an employee's details
 func Mongo_db_delete_employee_details(id int)(string, error){
 	collection, err := connections.Mongo_db_Connection()
 	if err != nil{

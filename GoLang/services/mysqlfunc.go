@@ -10,6 +10,7 @@ import (
 )
 
 
+// Function to make sure the database and the tables are in place
 func Mysql_db_health_check()error{
 	db, err := connections.Mysql_db_Connection()
 	if err != nil {
@@ -20,18 +21,19 @@ func Mysql_db_health_check()error{
 	health_check_query:="create table if not exists employee_details(id INT unsigned NOT NULL AUTO_INCREMENT, name varchar(150) NOT NULL, age INT, address LONGTEXT, PRIMARY KEY(id));"
 	res, err := db.ExecContext(context.Background(), health_check_query)
 	if err != nil {
-		// fmt.Printf("Health check failer: %q\n", err)
+
 		return err
 	}
 	rows, err := res.RowsAffected()
     if err != nil {
-        // fmt.Printf("Error %q when getting rows affected\n", err)
+
         return err
     }
     fmt.Printf("Rows affected when creating table: %d\n", rows)
 	return nil
 }
 
+// Function to insert a new employee record into the employee table
 func Mysql_db_insert(ename string, eage int, eaddr string ) (string, error){
 	db, err := connections.Mysql_db_Connection()
     // if there is an error opening the connection, handle it
@@ -57,6 +59,7 @@ func Mysql_db_insert(ename string, eage int, eaddr string ) (string, error){
 	return "Successfully inserted employee with id : "+strconv.Itoa(int(id)), nil
 }
 
+// Function to get details of a particular employee based on the id provided
 func Mysql_db_get_employee(id int)(entity.Employee, error){
 	get_query:="SELECT * FROM employee_details where id = ?;"
 	db, err := connections.Mysql_db_Connection()
@@ -76,6 +79,8 @@ func Mysql_db_get_employee(id int)(entity.Employee, error){
     return employee, nil
 }
 
+
+// Function to get details of all the employees in the database
 func Mysql_db_get_all_employee()([]entity.Employee, error){
 	get_query:="SELECT * FROM employee_details;"
 	db, err := connections.Mysql_db_Connection()
@@ -105,6 +110,8 @@ func Mysql_db_get_all_employee()([]entity.Employee, error){
 	
 }
 
+
+// Function to update the details of an employee
 func Mysql_db_update_employee_details(id int64, ename string, eage int, eaddr string ) (string, error){
 	db, err := connections.Mysql_db_Connection()
     // if there is an error opening the connection, handle it
@@ -114,7 +121,7 @@ func Mysql_db_update_employee_details(id int64, ename string, eage int, eaddr st
     }
 
 	defer db.Close()
-	// insert, err := db.Query("INSERT INTO employee_details(name, age, address) VALUES('Vishnu J G', 21, '42, 2nd main, Poorna Pragna Layout BSK 3rd stage, Bengaluru 560085')")
+
 	update_query:="UPDATE employee_details SET name = ?, age = ?, address = ? where id = ?"
 	update, err := db.ExecContext(context.Background(), update_query, ename, eage, eaddr, id)
     if err != nil {
@@ -129,16 +136,18 @@ func Mysql_db_update_employee_details(id int64, ename string, eage int, eaddr st
 	return "Successfully updated id : "+strconv.Itoa(int(id)), nil
 }
 
+
+// Function to delete an employee's details
 func Mysql_db_delete_employee(id int64) (string, error){
 	db, err := connections.Mysql_db_Connection()
-    // if there is an error opening the connection, handle it
+	 // if there is an error opening the connection, handle it
     if err != nil {
         // panic(err.Error())
 		return "Failed to delete ", err
     }
 
 	defer db.Close()
-	// insert, err := db.Query("INSERT INTO employee_details(name, age, address) VALUES('Vishnu J G', 21, '42, 2nd main, Poorna Pragna Layout BSK 3rd stage, Bengaluru 560085')")
+
 	delete_query:="DELETE FROM employee_details where id = ?"
 	deleted, err := db.ExecContext(context.Background(), delete_query, id)
     if err != nil {
